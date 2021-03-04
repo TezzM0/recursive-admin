@@ -14,5 +14,10 @@
         "psr-0" : {
             "Grigorygraborenko\\RecursiveAdmin" : "src"
         }
+    },
+    "require": {
+        "symfony/symfony": "4.4.*",
+        "symfony/orm-pack": "^2.1",
+        "nesbot/carbon": "^2.26"
     }
 }

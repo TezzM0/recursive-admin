@@ -8,9 +8,11 @@
 
 namespace Grigorygraborenko\RecursiveAdmin\Controller;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,38 +22,32 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 use Carbon\Carbon;
-
+use Psr\Log\LoggerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-
-use JMS\DiExtraBundle\Annotation as DI;
-use Grigorygraborenko\RecursiveAdmin\Annotations\Admin;
 
 /**
  * Class AdminController
  * @package RecursiveAdminBundle\Controller
  */
-class AdminController extends Controller {
+class AdminController extends AbstractController {
 
     /**
-     * @DI\Inject("logger")
      * @var LoggerInterface $logger
      */
     private $logger;
 
     /**
-     * @DI\Inject("doctrine.orm.entity_manager")
      * @var EntityManager $em
      */
     private $em;
 
     /**
-     * @DI\Inject("security.authorization_checker")
+     * @var AuthorizationChecker $role_checker
      */
     private $role_checker;
 
     /**
-     * @DI\Inject("%recursive_admin.config%")
      */
     private $config;
 
@@ -61,7 +57,12 @@ class AdminController extends Controller {
      * AdminController constructor.
      * See Doctrine\ORM\Mapping\ClassMetadataInfo for details
      */
-    public function __construct() {
+    public function __construct(
+        LoggerInterface $logger, EntityManagerInterface $em, AuthorizationChecker $role_checker) {
+        $this->logger = $logger;
+        $this->em = $em;
+        $this->role_checker = $role_checker;
+        $this->config = $this->getParameter('recursive_admin.config');
         $this->association_translations = array(
             1 => "one_one"
             ,2 => "many_one"
